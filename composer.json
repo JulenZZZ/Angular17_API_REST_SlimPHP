@@ -1,0 +1,20 @@
+{
+    "require": {
+        "slim/slim": "4.*",
+        "slim/psr7": "^1.6",
+        "guzzlehttp/psr7": "^2"
+    },
+    "autoload": {
+        "classmap": ["piramide-uploader"],
+        
+        "psr-4": {
+            "App\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "App\\Test\\": "tests"
+        }
+    }
+    
+}

@@ -1,0 +1,7 @@
+Options All -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine on  
+    RewriteCond %{ENV:REDIRECT_STATUS} !200 
+    RewriteRule ^api/(.*)$ api/index.php/$1
+</IfModule>
