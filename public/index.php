@@ -1,21 +1,32 @@
 <?php
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Selective\BasePath\BasePathMiddleware;
 use Slim\Factory\AppFactory;
 
-require __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
+$app->addRoutingMiddleware();
+
+$app->add(new BasePathMiddleware($app));
+
+//$app->setBasePath("../angular17_backend/public"); // /myapp/api is the api folder (http://domain/myapp/api)
 
 $app->addErrorMiddleware(true, true, true);
 
-$app->setBasePath("/../angular17_backend/public/index.php"); // /myapp/api is the api folder (http://domain/myapp/api)
-
-
-$app->get('/pruebas', function (Request $request, Response $response, $args) {
-    $response->getBody()->write("Hello world!");
+/*
+$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
+    $name = $args['name'];
+    $response->getBody()->write("Hello, $name");
     return $response;
 });
+*/
+$app->get('/hello/{name}', function (Request $request, Response $response, array $args) {
+    $name = $args['name'];
+    $response->getBody()->write("Hello, $name");
+    return $response;
+})->setName('root');
 
 try {
     $app->run();     

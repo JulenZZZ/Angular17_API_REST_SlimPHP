@@ -18,6 +18,7 @@ class ComposerStaticInit026509606a55be5c56c243e48adc6597
             'Symfony\\Polyfill\\Php80\\' => 23,
             'Slim\\Psr7\\' => 10,
             'Slim\\' => 5,
+            'Selective\\BasePath\\' => 19,
         ),
         'P' => 
         array (
@@ -35,6 +36,11 @@ class ComposerStaticInit026509606a55be5c56c243e48adc6597
             'Fig\\Http\\Message\\' => 17,
             'FastRoute\\' => 10,
         ),
+        'A' => 
+        array (
+            'App\\Test\\' => 9,
+            'App\\' => 4,
+        ),
     );
 
     public static $prefixDirsPsr4 = array (
@@ -49,6 +55,10 @@ class ComposerStaticInit026509606a55be5c56c243e48adc6597
         'Slim\\' => 
         array (
             0 => __DIR__ . '/..' . '/slim/slim/Slim',
+        ),
+        'Selective\\BasePath\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/selective/basepath/src',
         ),
         'Psr\\Log\\' => 
         array (
@@ -79,6 +89,14 @@ class ComposerStaticInit026509606a55be5c56c243e48adc6597
         'FastRoute\\' => 
         array (
             0 => __DIR__ . '/..' . '/nikic/fast-route/src',
+        ),
+        'App\\Test\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/tests',
+        ),
+        'App\\' => 
+        array (
+            0 => __DIR__ . '/../..' . '/src',
         ),
     );
 

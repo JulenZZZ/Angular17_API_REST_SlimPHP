@@ -1,7 +1,6 @@
-Options All -Indexes
-
-<IfModule mod_rewrite.c>
-    RewriteEngine on  
-    RewriteCond %{ENV:REDIRECT_STATUS} !200 
-    RewriteRule ^api/(.*)$ api/index.php/$1
-</IfModule>
+# Redirect to front controller
+RewriteEngine On
+# RewriteBase /
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteRule ^ index.php [QSA,L]
