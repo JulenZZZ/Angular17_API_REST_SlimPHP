@@ -46,14 +46,61 @@ $app->post('/products', function (Request $request,Response $response,$app) {
 //LIST ALL PRODUCTS
 $app->get('/products', function (Request $request, Response $response) {
     $db= new mysqli('localhost', 'root','','curso_angular17');
-    $sql = 'hola soy un string';
-    var_dump($db->query('hola soy un string'));
-    
-   // var_dump($query->fetch_assoc());
+
+    $sql = "SELECT *FROM productos ORDER BY id DESC;";
+
+    $result = $db->query($sql);
+
+    if ($result) {
+        $productos = array();
+
+        // Obtén cada fila como un array asociativo
+        while ($producto = $result->fetch_assoc()) {
+            // Agrega la fila al array de resultados
+            $productos[] = $producto;
+        }
+        $response->getBody()->write(json_encode($productos));
+        
+    } else {
+        // Maneja errores en la consulta
+        $response->getBody()->write("Error en la consulta: " . $db->error);
+        $response = $response->withStatus(500); // Código de estado 500 para error interno del servidor
+    }
+
+    // Cierra la conexión y la declaración
+    $db->close();
     
     return $response;
 });
 //RETURN A SINGLE PRODUCT
+$app->get('/products/{id}', function (Request $request, Response $response, array $args) {
+
+    $db= new mysqli('localhost', 'root','','curso_angular17');
+    $id = $args['id'];
+    $sql = "SELECT *FROM productos WHERE id=".$id;
+
+    $query = $db->query($sql);
+    
+    $result = array(
+        "status" => "error",
+        "code"=> 404,
+        "message"=> "Producto no enco   ntrado"
+    );
+    if ($query->num_rows == 1) {
+        $producto = $query->fetch_assoc();
+        $result = array(
+            "status" => "success",
+            "code"=> 200,
+            "data"=> $producto
+        );
+    }
+
+    $response->getBody()->write(json_encode($result));
+
+
+    $db->close();
+    return $response;
+});
 
 //DELETE PRODUCT
 
