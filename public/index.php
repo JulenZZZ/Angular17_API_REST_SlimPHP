@@ -84,7 +84,7 @@ $app->get('/products/{id}', function (Request $request, Response $response, arra
     $result = array(
         "status" => "error",
         "code"=> 404,
-        "message"=> "Producto no enco   ntrado"
+        "message"=> "Producto no encontrado"
     );
     if ($query->num_rows == 1) {
         $producto = $query->fetch_assoc();
@@ -103,10 +103,153 @@ $app->get('/products/{id}', function (Request $request, Response $response, arra
 });
 
 //DELETE PRODUCT
+$app->get('/delete-product/{id}', function (Request $request, Response $response, array $args) {
+   
+    $db= new mysqli('localhost', 'root','','curso_angular17');
+    $id = $args['id'];
+    $sql = "DELETE FROM productos WHERE id=".$id;
+
+    $query = $db->query($sql);
+
+    if ($query){
+    
+        $result = array(
+            "status" => "success",
+            "code"=> 200,
+            "message"=> "Producto eliminado"
+        );
+    } else {
+        $result = array(
+            "status" => "error",
+            "code"=> 404,
+            "message"=> "Producto no eliminado"
+        );
+    }   
+
+    $response->getBody()->write(json_encode($result));
+    
+    $db->close();
+    return $response;
+});
+
 
 //UPDATE PRODUCT
+$app->post('/update-product/{id}', function (Request $request, Response $response,array $args): Response {
+
+    $productoId = $args['id'];
+
+    // Decodifica el JSON del cuerpo de la solicitud
+    
+    $data = $request->getParsedBody();
+    $html = var_export($data, true);
+    $response->getBody()->write($html);
+    $data2 = implode([],$data);
+    $decode = json_decode($data2, true);
+
+    if(!isset($decode['imagen'])) {
+        $decode['imagen']= null;
+    }
+
+    $nombre = $decode['nombre'];
+    $description = $decode['description'];
+    $precio = $decode['precio'];
+    $imagen = $decode['imagen'];
+
+    // Crea una conexión a la base de datos
+    $db = new mysqli('localhost', 'root', '', 'curso_angular17');
+
+    // Verifica si hay errores en la conexión
+    if(!isset($decode['nombre'])) {
+        $decode['nombre']= null;
+    }
+
+    if(!isset($decode['description'])) {
+        $decode['description']= null;
+    }
+
+    if(!isset($decode['precio'])) {
+        $decode['precio']= null;
+    }
+
+    if(!isset($decode['imagen'])) {
+        $decode['imagen']= null;
+    }
+
+    // Actualiza el producto con la información proporcionada
+    $sql = "UPDATE productos SET nombre = ?, description = ?, precio = ?,";
+
+    if(isset($imagen)) {
+        $sql .= " imagen = ?";
+    }
+
+    $sql .= "WHERE id = ?";
+    $stmt = $db->prepare($sql);
+
+    // Verifica si la preparación de la consulta fue exitosa
+    if ($stmt) {
+        // Vincula los parámetros y ejecuta la consulta
+        $stmt->bind_param("ssssi", $nombre, $description, $precio, $imagen, $productoId);
+        $stmt->execute();
+
+        // Verifica si la actualización fue exitosa
+        if ($stmt->affected_rows > 0) {
+            $response->getBody()->write("Producto actualizado exitosamente");
+        } else {
+            $response->getBody()->write("No se encontró el producto con el ID proporcionado");
+            $response = $response->withStatus(404); // Código de estado 404 para recurso no encontrado
+        }
+
+        // Cierra la declaración preparada
+        $stmt->close();
+    } else {
+        // Maneja errores en la preparación de la consulta
+        $response->getBody()->write("Error en la preparación de la consulta: " . $db->error);
+        $response = $response->withStatus(500); // Código de estado 500 para error interno del servidor
+    }
+
+    $db->close();
+
+    return $response;
+   
+});
 
 //UPLOAD AN IMAGE TO A PRODUCT
+$app->post('/upload-image', function (Request $request, Response $response): Response {
+
+    $result = array(
+        "status" => "error",
+        "code"=> 404,
+        "message"=> "El archivo no ha podido subirse"
+    );
+
+    if(isset($_FILES['uploads'])){
+        $piramideUploader = new PiramideUploader();
+
+        $upload = $piramideUploader->upload('image','uploads','uploads',array('image/jpeg','image/png','image/gif'));
+        $file = $piramideUploader->getInfoFile();
+        $file_name = $file['complete_name'];
+
+        if(isset($upload) && $upload['uploaded'] == false){
+            $result = array(
+                "status" => "error",
+                "code"=> 404,
+                "message"=> "El archivo no ha podido subirse"
+            );
+            
+        }else{
+        $result = array(
+            "status" => "success",
+            "code"=> 200,
+            "message"=> "El archivo se ha subido",
+            "file_name"=> $file_name
+            );
+        }
+    }
+    $response->getBody()->write(json_encode($result));
+    
+    return $response;
+   
+});
 
 //SAVE PRODUCTS
 $app->post('/products', function (Request $request, Response $response): Response {
