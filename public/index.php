@@ -139,26 +139,13 @@ $app->post('/update-product/{id}', function (Request $request, Response $respons
     $productoId = $args['id'];
 
     // Decodifica el JSON del cuerpo de la solicitud
-    
+    // Obtén el cuerpo de la solicitud como JSON
     $data = $request->getParsedBody();
     $html = var_export($data, true);
     $response->getBody()->write($html);
-    $data2 = implode([],$data);
+    $data2 = implode('',$data);
     $decode = json_decode($data2, true);
 
-    if(!isset($decode['imagen'])) {
-        $decode['imagen']= null;
-    }
-
-    $nombre = $decode['nombre'];
-    $description = $decode['description'];
-    $precio = $decode['precio'];
-    $imagen = $decode['imagen'];
-
-    // Crea una conexión a la base de datos
-    $db = new mysqli('localhost', 'root', '', 'curso_angular17');
-
-    // Verifica si hay errores en la conexión
     if(!isset($decode['nombre'])) {
         $decode['nombre']= null;
     }
@@ -175,42 +162,55 @@ $app->post('/update-product/{id}', function (Request $request, Response $respons
         $decode['imagen']= null;
     }
 
-    // Actualiza el producto con la información proporcionada
-    $sql = "UPDATE productos SET nombre = ?, description = ?, precio = ?,";
+    $nombre = $decode['nombre'];
+    $description = $decode['description'];
+    $precio = $decode['precio'];
+    $imagen = $decode['imagen'];
 
-    if(isset($imagen)) {
-        $sql .= " imagen = ?";
-    }
+    // Crea una conexión a la base de datos
+    $db = new mysqli('localhost', 'root', '', 'curso_angular17');
 
-    $sql .= "WHERE id = ?";
-    $stmt = $db->prepare($sql);
-
-    // Verifica si la preparación de la consulta fue exitosa
-    if ($stmt) {
-        // Vincula los parámetros y ejecuta la consulta
-        $stmt->bind_param("ssssi", $nombre, $description, $precio, $imagen, $productoId);
-        $stmt->execute();
-
-        // Verifica si la actualización fue exitosa
-        if ($stmt->affected_rows > 0) {
-            $response->getBody()->write("Producto actualizado exitosamente");
-        } else {
-            $response->getBody()->write("No se encontró el producto con el ID proporcionado");
-            $response = $response->withStatus(404); // Código de estado 404 para recurso no encontrado
+    try {
+        // Verifica si la conexión fue exitosa
+        if ($db->connect_error) {
+            throw new Exception("Error en la conexión a la base de datos: " . $db->connect_error);
         }
 
-        // Cierra la declaración preparada
+        // Actualiza el producto con la información proporcionada
+        $sql = "UPDATE productos SET nombre = ?, description = ?, precio = ?";
+
+        if (isset($imagen)) {
+            $sql .= " ,imagen = ?";
+        }
+
+        $sql .= " WHERE id = ?";
+        $stmt = $db->prepare($sql);
+        var_dump($sql);
+    
+        // Si se proporciona la imagen, vincula el parámetro adicional
+        if (isset($imagen)) {
+            $stmt->bind_param("sssdi", $nombre, $description, $precio, $imagen,$productoId);
+            var_dump($stmt);
+        } else {
+            $stmt->bind_param("ssdi", $nombre, $description, $precio,$productoId);
+            var_dump($stmt);
+        }
+
+        // Ejecuta la declaración
+        $stmt->execute();
+
+        // Cierra la conexión
         $stmt->close();
-    } else {
-        // Maneja errores en la preparación de la consulta
-        $response->getBody()->write("Error en la preparación de la consulta: " . $db->error);
-        $response = $response->withStatus(500); // Código de estado 500 para error interno del servidor
+    } catch (Exception $e) {
+        // Maneja la excepción
+        $response->getBody()->write("Error: " . $e->getMessage());
+    } finally {
+        // Siempre cierra la conexión
+        $db->close();
     }
 
-    $db->close();
-
     return $response;
-   
+
 });
 
 //UPLOAD AN IMAGE TO A PRODUCT
